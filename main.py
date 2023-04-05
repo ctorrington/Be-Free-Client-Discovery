@@ -1,11 +1,10 @@
 import csv
-import sys
+import argparse
 import requests
 from bs4 import BeautifulSoup
 import re
+import typing
 
-
-run = False
 
 # with open('company_house_data.csv', newline='') as csvfile:
 #     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
@@ -14,24 +13,42 @@ run = False
 #         input()
 
 
-i = 0
-j = 0
+# i = 0
+# j = 0
 
-print("runninig run")
-def run():
-    with open('company_house_data.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
+# def find(read_file: typing.TextIO, post_town: str):
 
-        for row in reader:
+
+
+def read_file():
+    with open('company_house_data.csv', newline='', encoding='utf-8') as read_file, open('liverpool_company_house_data_.csv', 'w', newline = '', encoding = 'utf-8') as write_file:
+        dictionary_reader = csv.DictReader(read_file)
+        dictionary_writer = csv.DictWriter(write_file, fieldnames = dictionary_reader.fieldnames)
+
+        dictionary_writer.writeheader()
+
+        for row in dictionary_reader:
             # print(row)
             if row['RegAddress.PostTown'] == 'LIVERPOOL':
-                # print(row['CompanyName'])
-                # print(row['RegAddress.PostTown'])
-                print(row)
-                break
-                # i+= 1
-            # print(i)
-            # j+=1
+                # print(type(row))
+                # input()
+                print(f"{row}\n")
+                dictionary_writer.writerow(row)
+                # print(row)
+                # input()
+            # print(row)
+            # input()
+
+        # for row in reader:
+        #     # print(row)
+        #     if row['RegAddress.PostTown'] == 'LIVERPOOL':
+        #         # print(row['CompanyName'])
+        #         # print(row['RegAddress.PostTown'])
+        #         print(row)
+        #         break
+        #         # i+= 1
+        #     # print(i)
+        #     # j+=1
 
 
 # cookies = {"CONSENT": "YES+cb.20210720-07-p0.en+FX+410"}
@@ -59,7 +76,11 @@ cookies = {
     "SOCS" :"CAISHAgCEhJnd3NfMjAyMzAyMTUtMF9SQzEaAmVuIAEaBgiA8MqfBg", 
     "OGPC" :"1151720448-1:19022622-1:"
 }
+
+
 URL = "https://www.google.com/search?q=the+liverpool+recruitment+company+contact+information+linkedin"
+
+
 page = requests.get(URL, cookies=cookies)
 
 results = BeautifulSoup(page.content, "html.parser")
@@ -75,22 +96,38 @@ print(results)
 #rso > div:nth-child(1) > div > div > div > div > div:nth-child(2) > div
 
 
+
+# class DependentChoicesAction(argparse.Action):
+#     def __call__(self, parser, namespace, values, option_string = None):
+#         match values:
+#             case 'display':
+#                 choices = []
+#             case 'scrape':
+#                 choices = ["website", "file path"]
+#             case 'create':
+#                 choices = ["property", "value"]
+#             case _:
+#                 choices = []
+
+#         setattr(namespace, self.dest + '_choices', choices)
+#         setattr(namespace, self.dest, values)
+
+# def main(args):
+    
+#     match args:
+#         case 'read-file':
+
 if __name__ == "__main__":
 
-    # terminal arguements
-    # print(sys.argv)
-    for i in sys.argv:
-        # print(i)
-        match i:
-            case "run":
-                print("running")
-                run()
+    read_file()
+#     argument_parser = argparse.ArgumentParser()
 
-    # for i, arg in enumerate(sys.argv):
-    #     print(f"Argument {i:>6}: {arg}")
 
-# if sys.argv[1] == "run":
-#     print("yo")
+#     argument_parser.add_argument('filename', help = 'The name of the csv file to process.')
+#     argument_parser.add_argument('-a', '--action', choices = ['display', 'scrape', 'create'], required = True, help = "The action to perform on the given csv file")
+#     argument_parser.add_argument('-k', '--keywords', )
+#     argument_parser.add_argument('--read_file', type = str, help = 'Display the file contents.')
 
-# print(i)
-# print(j)
+#     arguments = argument_parser.parse_args()
+
+#     main(arguments)
