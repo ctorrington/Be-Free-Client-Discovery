@@ -49,7 +49,7 @@ def main(scrape_file: str):
         charity_email_contact_info = dict()
         rows = read_file.readlines()
 
-        split_num = 2
+        split_num = 0
         start_range = 265 * split_num
         end_range = 265 * split_num + 264
 
@@ -102,7 +102,7 @@ def main(scrape_file: str):
         random_page_chance = 0.4
 
         if random.random() > random_page_chance:
-            url = random_page_urls[random.randint(0, len(random_page_urls))]
+            url = random_page_urls[random.randint(0, len(random_page_urls) - 1)]
         else:
             # The url of the page to scrape.
             url = f"https://www.google.com/search?q={charity_name}+contact+information+linkedin"
