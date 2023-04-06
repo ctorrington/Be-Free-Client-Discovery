@@ -45,8 +45,9 @@ def readFile():
 
     return emails
 
+
 def getCompanyName(company_emails):
-    naems
+    names = [email.split('@')[1].split('.')[0] for email in company_emails]
 
     return names
 
@@ -54,4 +55,5 @@ def getCompanyName(company_emails):
 def main():
     company_emails = readFile()
     company_names = getCompanyName(company_emails)
-    scrape()
+    scrape(company_names)
+
