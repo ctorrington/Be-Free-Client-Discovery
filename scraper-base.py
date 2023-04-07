@@ -16,25 +16,30 @@ def sleep():
     time.sleep(timeout_in_seconds)
 
 
-def scrape():
-    query = "Enter search terms here"
+def scrape(company_names):
+    for name in company_names:
+        query = "contact information linkedin"
 
-    query = query.replace(" ", "+")
+        query = query.replace(" ", "+")
 
-    url = f"https://www.google.com/search?q={query}"
+        url = f"https://www.google.com/search?q={name}+{query}"
 
-    response = requests.get(url)
+        response = requests.get(url)
 
-    soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    results = soup.find_all("div", class_="BNeawe vvjwJb AP7Wnd")
-    for result in results:
-        title = result.text
-        link = result.find_parent('a')['href']
-        content = result.find("div", class_="BNeawe s3v9rd AP7Wnd").get_text()
-        print(title)
-        print("URL: " + link)
-        print("Content: " + content)
+        results = soup.find_all("div", class_="BNeawe vvjwJb AP7Wnd")
+        for result in results:
+            title = result.text
+            link = result.find_parent('a')['href']
+            content = result.find("div", class_="BNeawe s3v9rd AP7Wnd").get_text()
+            print(title)
+            print("URL: " + link)
+            print("Content: " + content)
+
+        sleep()
+
+
 
 
 def readFile():
@@ -46,10 +51,16 @@ def readFile():
     return emails
 
 
-def getCompanyName(company_emails):
-    names = [email.split('@')[1].split('.')[0] for email in company_emails]
+def writeFile():
+    with open('./data/output.txt', 'w') as f:
 
-    return names
+
+
+def getCompanyName(company_emails):
+    names = [email.split('@')[1].split('.')[0].lower() for email in company_emails]
+    unwanted_names = ('yahoo','hotmail','gmail', 'outlook', 'icloud', 'aol', 'live')
+    clean_names = [name for name in names if name not in unwanted_names]
+    return clean_names
 
 
 def main():
