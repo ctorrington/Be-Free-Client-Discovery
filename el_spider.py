@@ -8,6 +8,7 @@ import time
 import random
 import typing
 import csv
+import bs4
 
 # from bs4 import BeautifulSoup
 import bs4
@@ -16,8 +17,8 @@ class WebCrawlingSpider:
     def __init__(self):
         self.LIMIT = 265
         self.RANDOM_PAGE_CHANCE = 0.5
-        self.target_city_list = ['Manchester', 'Liverpool', 'Blackpool', 'Chester', 'Northwich', 'Bolton', 'Warrington']
-        self.target_city_list = ['Lancashire UK', 'Manchester']
+        self.target_city_list = ['Manchester', 'Liverpool', 'Blackpool', 'Chester', 'Northwich', 'Bolton uk', 'Warrington uk']
+        self.target_city_list = random.choices(self.target_city_list)
         self.company_bcorp_data_dict = {}
         self.cookie_dict = {
             "__Secure-3PSIDCC": "AFvIBn-mowv1SkFptQkQvi9TMphLCFWv8oJHGwA_Y5lK2og_TqUtbc82ZEKQEu1pVt-VsKiEquc",
@@ -203,7 +204,10 @@ class WebCrawlingSpider:
         
         driver = webdriver.Chrome()
         driver.get(company_page_url)
+        page_source = driver.page_source
         wait = WebDriverWait(driver, 10)
+        
+        company_dictionary = {}
         
         # Get the overview div.
         overview_div = driver.find_element(By.XPATH, "//div[@class='lg:hidden flex flex-col bg-gray-light p-4 space-y-4']")
@@ -215,23 +219,118 @@ class WebCrawlingSpider:
         
         for section in section_div_list:
             print(f"section:\n{section}\n\n")
-            heading = section.find_element(By.XPATH, "span").text
+            heading = section.find_element(By.XPATH, "./span").get_attribute('textContent')
             # heading = section.find_element(By.TAG_NAME, 'span')
             print(f"found heading:\n{heading}\n")
+            
+            match heading:
+                case 'Operates In':
+                    XPATH = './div/p'
+                case 'Website':
+                    XPATH = './a'
+                case _:
+                    XPATH = './p'
+                    
             
             info_div = section.find_element(By.XPATH, "./div")
             # info_div = section.find_element(By.TAG_NAME, 'div')
             print(f"found info div:\n{info_div}\n")
             
-            info_text = info_div.find_element(By.XPATH, "./p").text
+            info_text = info_div.find_element(By.XPATH, XPATH).get_attribute('textContent')
             # info_text = info_div.find_element(By.TAG_NAME, 'p').text
             print(f"found info text:\n{info_text}\n")
-            self.company_bcorp_data_dict[heading] = info_text
+            company_dictionary[heading] = info_text
             
-            print(f"\n\n\nCOMPANY BCORP DATA DICT:\n{self.company_bcorp_data_dict}\n")
+            
+        print(f"\n\n\nCOMPANY BCORP DATA DICT:\n{company_dictionary}\n")
+            
+
+        # Get the overall company scores. 
+        
+        overall_b_impact_score = driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/main/div[1]/div[6]/div[2]/div[1]/span').get_attribute('textContent').split(" ", maxsplit=1)
+        qualifies_for_b_corp_certification = driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/main/div[1]/div[6]/div[2]/div[2]/span').get_attribute('textContent').split(" ", maxsplit=1)
+        median_score_for_ordinary_businesses = driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/main/div[1]/div[6]/div[2]/div[3]/span').get_attribute('textContent').split(" ", maxsplit=1)
+        
+        overall_b_impact_score_value = overall_b_impact_score[0]
+        overall_b_impact_score_heading = overall_b_impact_score[1]
+        
+        qualifies_for_b_corp_certification_value = qualifies_for_b_corp_certification[0]
+        qualifies_for_b_corp_certification_heading = qualifies_for_b_corp_certification[1]
+        
+        median_score_for_ordinary_businesses_value = median_score_for_ordinary_businesses[0]
+        median_score_for_ordinary_businesses_heading = median_score_for_ordinary_businesses[1]
+        
+        # print(overall_b_impact_score_value)
+        # print(overall_b_impact_score_heading)
+        # print(qualifies_for_b_corp_certification_value)
+        # print(qualifies_for_b_corp_certification_heading)
+        # print(median_score_for_ordinary_businesses_value)
+        # print(f"{median_score_for_ordinary_businesses_heading}\n")
+        
+        # Update the current company's information dictionary.
+        company_dictionary[overall_b_impact_score_heading] = overall_b_impact_score_value
+        company_dictionary[qualifies_for_b_corp_certification_heading] = qualifies_for_b_corp_certification_value
+        company_dictionary[median_score_for_ordinary_businesses_heading] = median_score_for_ordinary_businesses_value
+                
+                
+        print(f"\nCOMPANY DICTIONARY:\n{company_dictionary}")
+        # big numbers div class
+        # flex animate-fade-in space-x-24
+        
+        bcorp_score_section_div = driver.find_elements(By.XPATH, "//div[@class='px-2 pt-6']")[:-5]
+        
+        for section in bcorp_score_section_div:
+            
+            # Get the section names and overall section scores.
+            heading = section.find_element(By.TAG_NAME, 'h3').get_attribute('textContent').split(' ')
+            section_dictionary = {}
+            section_dictionary[heading[0]] = {}
+            section_dictionary[heading[0]]['overall score'] = heading[1]
+            
+            # print(section_dictionary)
+            
+            # Get the individual section scores container.
+            individual_section_scores_div = section.find_element(By.TAG_NAME, 'div')
+            print(f"individual_section_scores_div: {individual_section_scores_div}")
+            
+            # Get the individual section scores.
+            individual_section_scores = individual_section_scores_div.find_elements(By.XPATH, "./div[@class='flex px-4']")
+            print(f"individual_section_scores: {individual_section_scores}")
+            
+            for section_scores in individual_section_scores:
+                score_heading = section_scores.find_elements(By.TAG_NAME, 'span')
+                score_label = score_heading[0].get_attribute('textContent')
+                score_value = score_heading[1].get_attribute('textContent')
+                
+                section_dictionary[heading[0]][score_label] = score_value
+                
+                # print(f"score label: {score_label}")
+                # print(f"score value: {score_value}")
+                
+            print(f"\nsection dictionary for the company:\n{section_dictionary}")
+            company_dictionary.update(section_dictionary)
+            
+        print(f"\ndictionary for the company:\n{company_dictionary}")
+            
+            
+            
+            
+
+            
+        # input()
         
         
         
+        
+        
+        
+        
+        
+
+        # Update the entire bcorp company dictionary with the new company information dictionary 
+        self.company_bcorp_data_dict.update(company_dictionary)
+        
+        print(f"all company data:\n{self.company_bcorp_data_dict}")
         
         driver.quit()
         self.spider_sleep()
