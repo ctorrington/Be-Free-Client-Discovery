@@ -40,8 +40,6 @@ def scrape(company_names):
         sleep()
 
 
-
-
 def readFile():
     path_to_file = 'data/charity_email_list.txt'
     with open(path_to_file, 'r') as f:
@@ -51,14 +49,14 @@ def readFile():
     return emails
 
 
-def writeFile():
-    with open('./data/output.txt', 'w') as f:
-
+# def writeFile():
+#     with open('./data/output.txt', 'w') as f:
+#
 
 
 def getCompanyName(company_emails):
     names = [email.split('@')[1].split('.')[0].lower() for email in company_emails]
-    unwanted_names = ('yahoo','hotmail','gmail', 'outlook', 'icloud', 'aol', 'live')
+    unwanted_names = ('yahoo', 'hotmail', 'gmail', 'outlook', 'icloud', 'aol', 'live')
     clean_names = [name for name in names if name not in unwanted_names]
     return clean_names
 
@@ -67,4 +65,3 @@ def main():
     company_emails = readFile()
     company_names = getCompanyName(company_emails)
     scrape(company_names)
-
