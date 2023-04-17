@@ -49,7 +49,7 @@ def main(scrape_file: str):
         charity_email_contact_info = dict()
         rows = read_file.readlines()
 
-        split_num = 0
+        split_num = 3
         start_range = 265 * split_num
         end_range = 265 * split_num + 264
 
@@ -116,7 +116,7 @@ def main(scrape_file: str):
         searched = results.findAll("div", {'class': 'BNeawe s3v9rd AP7Wnd'}, recursive=True)
 
         regrets_matches = []
-        # List of regular expressions searching the selected HTML elements. 
+        # List of regular expressions searching the selected HTML elements.
         regrets = [
             r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}',  # email regex
             r'\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}',  # ten digit phone number regex
