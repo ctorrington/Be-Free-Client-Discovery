@@ -95,7 +95,7 @@ class WebCrawlingSpider:
         
         Should be called after every time the webdriver is closed."""
         
-        time.sleep(random.randint(2, 5))
+        time.sleep(random.randint(10, 15))
         
         
     def write_dict_to_file(self, file_path: str, data: dict[str, str]) -> None:
@@ -160,20 +160,20 @@ class WebCrawlingSpider:
         
         # Get the link to each company's individual page.
         for company in company_names:
-            print(f"found company with name: {company.text}")
+            # print(f"found company with name: {company.text}")
             link_element = company.find_element(By.XPATH, "./ancestor::a")
             company_link = link_element.get_attribute("href")
-            print(f"company has link: {company_link}\n")
+            # print(f"company has link: {company_link}\n")
             
             company_name_link_dict[company.text] = company_link
-            
+
             # Update the global dictionary will all company names and data
-            print(f"adding company information for: {company.text}\n")
-            self.get_specific_company_bcorp_information(company_link)
-            
+            print(f"adding company information for: {company.text}")
+            # self.get_specific_company_bcorp_information(company_link)
+
         driver.quit()
         self.spider_sleep()
-        
+
         return company_name_link_dict
         
         
@@ -198,9 +198,7 @@ class WebCrawlingSpider:
         return [f"https://www.bcorporation.net/en-us/find-a-b-corp?query={city.lower().replace(' ', '%20')}" for city in self.target_city_list]
     
     def get_specific_company_bcorp_information(self, company_page_url: str) -> dict[str, str]:
-        """Return the company's bcorp information from the given company url.
-        UNDER CONSTRUCTION
-        """
+        """Return the company's bcorp information from the given company url."""
         
         driver = webdriver.Chrome()
         driver.get(company_page_url)
@@ -211,18 +209,18 @@ class WebCrawlingSpider:
         
         # Get the overview div.
         overview_div = driver.find_element(By.XPATH, "//div[@class='lg:hidden flex flex-col bg-gray-light p-4 space-y-4']")
-        print(f"found overview div:\n{overview_div}\n")
+        # print(f"found overview div:\n{overview_div}\n")
         
         section_div_list = overview_div.find_elements(By.XPATH, "./div")
         # section_div_list = overview_div.find_elements(By.TAG_NAME, 'div')
-        print(f"\nfound section div:\n{section_div_list}\n") 
+        # print(f"\nfound section div:\n{section_div_list}\n") 
         
         for section in section_div_list:
-            print(f"section:\n{section}\n\n")
+            # print(f"section:\n{section}\n\n")
             heading = section.find_element(By.XPATH, "./span").get_attribute('textContent')
             # heading = section.find_element(By.TAG_NAME, 'span')
-            print(f"found heading:\n{heading}\n")
-            
+            # print(f"found heading:\n{heading}\n")
+
             match heading:
                 case 'Operates In':
                     XPATH = './div/p'
@@ -234,15 +232,15 @@ class WebCrawlingSpider:
             
             info_div = section.find_element(By.XPATH, "./div")
             # info_div = section.find_element(By.TAG_NAME, 'div')
-            print(f"found info div:\n{info_div}\n")
+            # print(f"found info div:\n{info_div}\n")
             
             info_text = info_div.find_element(By.XPATH, XPATH).get_attribute('textContent')
             # info_text = info_div.find_element(By.TAG_NAME, 'p').text
-            print(f"found info text:\n{info_text}\n")
+            # print(f"found info text:\n{info_text}\n")
             company_dictionary[heading] = info_text
             
             
-        print(f"\n\n\nCOMPANY BCORP DATA DICT:\n{company_dictionary}\n")
+        # print(f"\n\n\nCOMPANY BCORP DATA DICT:\n{company_dictionary}\n")
             
 
         # Get the overall company scores. 
@@ -260,20 +258,13 @@ class WebCrawlingSpider:
         median_score_for_ordinary_businesses_value = median_score_for_ordinary_businesses[0]
         median_score_for_ordinary_businesses_heading = median_score_for_ordinary_businesses[1]
         
-        # print(overall_b_impact_score_value)
-        # print(overall_b_impact_score_heading)
-        # print(qualifies_for_b_corp_certification_value)
-        # print(qualifies_for_b_corp_certification_heading)
-        # print(median_score_for_ordinary_businesses_value)
-        # print(f"{median_score_for_ordinary_businesses_heading}\n")
-        
         # Update the current company's information dictionary.
         company_dictionary[overall_b_impact_score_heading] = overall_b_impact_score_value
         company_dictionary[qualifies_for_b_corp_certification_heading] = qualifies_for_b_corp_certification_value
         company_dictionary[median_score_for_ordinary_businesses_heading] = median_score_for_ordinary_businesses_value
                 
                 
-        print(f"\nCOMPANY DICTIONARY:\n{company_dictionary}")
+        # print(f"\nCOMPANY DICTIONARY:\n{company_dictionary}")
         # big numbers div class
         # flex animate-fade-in space-x-24
         
@@ -291,49 +282,30 @@ class WebCrawlingSpider:
             
             # Get the individual section scores container.
             individual_section_scores_div = section.find_element(By.TAG_NAME, 'div')
-            print(f"individual_section_scores_div: {individual_section_scores_div}")
+            # print(f"individual_section_scores_div: {individual_section_scores_div}")
             
             # Get the individual section scores.
             individual_section_scores = individual_section_scores_div.find_elements(By.XPATH, "./div[@class='flex px-4']")
-            print(f"individual_section_scores: {individual_section_scores}")
+            # print(f"individual_section_scores: {individual_section_scores}")
             
             for section_scores in individual_section_scores:
                 score_heading = section_scores.find_elements(By.TAG_NAME, 'span')
                 score_label = score_heading[0].get_attribute('textContent')
                 score_value = score_heading[1].get_attribute('textContent')
-                
                 section_dictionary[heading[0]][score_label] = score_value
                 
-                # print(f"score label: {score_label}")
-                # print(f"score value: {score_value}")
-                
-            print(f"\nsection dictionary for the company:\n{section_dictionary}")
+            # print(f"\nsection dictionary for the company:\n{section_dictionary}")
             company_dictionary.update(section_dictionary)
             
         print(f"\ndictionary for the company:\n{company_dictionary}")
             
-            
-            
-            
-
-            
-        # input()
-        
-        
-        
-        
-        
-        
-        
-        
-
-        # Update the entire bcorp company dictionary with the new company information dictionary 
-        self.company_bcorp_data_dict.update(company_dictionary)
-        
-        print(f"all company data:\n{self.company_bcorp_data_dict}")
+        # # Update the entire bcorp company dictionary with the new company information dictionary 
+        # self.company_bcorp_data_dict.update(company_dictionary)
         
         driver.quit()
         self.spider_sleep()
+        
+        return company_dictionary
         
         
     def write_bcorp_company_information(self):
@@ -355,15 +327,24 @@ class WebCrawlingSpider:
             for page_number in range(number_of_pages):
                 all_target_city_company_name_link_dict = {}
                 
-                print(f"currently searching page number {page_number + 1}.\n")
+                print(f"currently searching page number. {page_number + 1}.\n")
                 if number_of_pages > 1:
                     target_city_url += f"&page={page_number}"    
                 
                 # Get the company and specific company information page.
                 # TODO the line below could be incorpated into the update statement underneath.
                 target_city_company_name_link_dictionary = self.get_company_names_and_links(target_city_url)
-                print(f"updating cumulative company list with the following companies and links:\n{target_city_company_name_link_dictionary.keys()}.\n")
+                # print(f"updating cumulative company list with the following companies and links:\n{target_city_company_name_link_dictionary.keys()}.\n")
                 all_target_city_company_name_link_dict.update(target_city_company_name_link_dictionary)
+                
+                for company in all_target_city_company_name_link_dict:
+                    print(f"retrieving bcorp data for {company}.\n")
+                    company_bcorp_info = {}
+                    company_bcorp_info[company] = self.get_specific_company_bcorp_information(all_target_city_company_name_link_dict[company])
+                    
+                    self.company_bcorp_data_dict.update(company_bcorp_info)
+                
+                
                 
                 # Get the specific data for each of those companies
                 
@@ -371,9 +352,10 @@ class WebCrawlingSpider:
                 
         print(f"cumulative company names with all of their links.")
         print(all_target_city_company_name_link_dict)
-            
-        # page_url = 'https://www.bcorporation.net/en-us/find-a-b-corp?query=manchester'
-        # self.get_company_names_and_links(page_url)
+        
+        print(f"\n\ncompany bcorp data dictionary:")
+        for company in self.company_bcorp_data_dict:
+            print(f"\n{company}:\n{self.company_bcorp_data_dict[company]}")
         
         
 def main() -> None:
