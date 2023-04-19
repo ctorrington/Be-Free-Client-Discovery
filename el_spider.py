@@ -9,6 +9,7 @@ import random
 import typing
 import csv
 import bs4
+import json
 
 # from bs4 import BeautifulSoup
 import bs4
@@ -17,8 +18,8 @@ class WebCrawlingSpider:
     def __init__(self):
         self.LIMIT = 265
         self.RANDOM_PAGE_CHANCE = 0.5
-        self.target_city_list = ['Manchester', 'Liverpool', 'Blackpool', 'Chester', 'Northwich', 'Bolton uk', 'Warrington uk']
-        self.target_city_list = random.choices(self.target_city_list)
+        self.target_city_list = list(set(['Manchester uk', 'Liverpool uk', 'Chester uk', 'Northwich uk', 'Bolton uk', 'Warrington uk', 'broughton uk', 'chester uk', 'widnes uk', 'wigan uk', 'preston uk', 'leeds uk', 'sheffield uk', 'bradford uk', 'stockport uk', 'york uk', 'Birmingham uk',]))
+        self.target_city_list = ['manchester']
         self.company_bcorp_data_dict = {}
         self.cookie_dict = {
             "__Secure-3PSIDCC": "AFvIBn-mowv1SkFptQkQvi9TMphLCFWv8oJHGwA_Y5lK2og_TqUtbc82ZEKQEu1pVt-VsKiEquc",
@@ -95,17 +96,41 @@ class WebCrawlingSpider:
         
         Should be called after every time the webdriver is closed."""
         
-        time.sleep(random.randint(10, 15))
+        minimum_sleep_time = 30
+        maximum_sleep_time = 60
+        
+        for time_remaining in range(random.randint(minimum_sleep_time, maximum_sleep_time), 0, -1):
+            print(f"laying low: {time_remaining:0{len(str(time_remaining))}d}", end="\r")
+            time.sleep(1)
+
         
         
     def write_dict_to_file(self, file_path: str, data: dict[str, str]) -> None:
         """Write the given dictionary to the given file."""
         
-        with open(file_path, 'w', newline='', encoding='utf-8') as write_file:
-            writer = csv.DictWriter(write_file, fieldnames=data.keys())
-            writer.writerow(data)
+        # Get the already existing data dictionary.
+        with open(file_path, 'r', newline='', encoding='utf-8') as read_file:
+            try:
+                previous_data = json.load(read_file)
+                
+            # The file is empty.
+            except json.decoder.JSONDecodeError as e:
+                previous_data = {}
+                # continue
+            
+        # Update the data dictionary with the new data dictionary.
+        previous_data.update(data)
         
-        print(f"{data.keys()} data written to {file_path}")
+        # Write the update dictionary data back to the file.
+        with open(file_path, 'w', newline='', encoding='utf-8') as write_file:
+            print(f"writing {data.keys()} data to file.")
+            json.dump(previous_data, write_file)
+        
+        # with open(file_path, 'w', newline='', encoding='utf-8') as write_file:
+        #     writer = csv.DictWriter(write_file, fieldnames=data.keys())
+        #     writer.writerow(data)
+        
+        # print(f"{data.keys()} data written to {file_path}")
         
         
     def get_element_contents(self, page_html: bs4.BeautifulSoup, element: str, element_property: str, element_property_value: str) -> str:
@@ -122,6 +147,7 @@ class WebCrawlingSpider:
     
     def get_page_html(self, page_url: str) -> bs4.BeautifulSoup:
         """Get the page html for the given page url.
+        
         NOT CURRENTLY IN USE WITH SELENIUM.
         WILL BE USED FOR MODULE LATER.
         """
@@ -186,6 +212,9 @@ class WebCrawlingSpider:
         wait = WebDriverWait(driver, 10)
         
         j = driver.find_elements(By.XPATH, "//button[@class='outline-none flex items-center justify-center w-10 h-10 border border-surface-variant-light-outline rounded-lg text-fiber-neutral-500 border-fiber-neutral-500 hover:bg-white hover:border-fiber-grey-900 focus:bg-white focus:border-fiber-grey-900']")
+                                                             outline-none flex items-center justify-center w-10 h-10 border border-surface-variant-light-outline rounded-lg text-fiber-neutral-500 border-fiber-neutral-500 hover:bg-white hover:border-fiber-grey-900 focus:bg-white focus:border-fiber-grey-900
+        print(len(j))
+        input()
         driver.quit()
         self.spider_sleep()
         
@@ -306,6 +335,17 @@ class WebCrawlingSpider:
         self.spider_sleep()
         
         return company_dictionary
+    
+    def is_already_searched(self, company_name: str) -> bool:
+        """Return whether the company has already been added to the company_information.json file."""
+        
+        pass
+        # print("checking if already searched")
+        # with open('company_information.json', 'r', newline='', encoding='utf-8') as read_file:
+        #     reader = csv.DictReader(read_file)
+            
+        # print(searched_company_dictionary)
+        # input()
         
         
     def write_bcorp_company_information(self):
@@ -318,6 +358,7 @@ class WebCrawlingSpider:
         # Get the data for each target city.
         for target_city_url in target_city_urls:
             # TODO this whole block should probably be a function.
+            
             # Get the number of pages listing bcorps for each query in the bcorp page.
             number_of_pages = self.get_number_of_pages(target_city_url) + 1
             print(f"target city url:\n{target_city_url}\n")
@@ -327,7 +368,7 @@ class WebCrawlingSpider:
             for page_number in range(number_of_pages):
                 all_target_city_company_name_link_dict = {}
                 
-                print(f"currently searching page number. {page_number + 1}.\n")
+                print(f"searching page number {page_number + 1} of {number_of_pages}.")
                 if number_of_pages > 1:
                     target_city_url += f"&page={page_number}"    
                 
@@ -338,18 +379,27 @@ class WebCrawlingSpider:
                 all_target_city_company_name_link_dict.update(target_city_company_name_link_dictionary)
                 
                 for company in all_target_city_company_name_link_dict:
-                    print(f"retrieving bcorp data for {company}.\n")
+                    
+                    # Check if the company has already been searched.
+                    # if self.is_already_searched(company):
+                    print(f"retrieving data for {company}.\n")
                     company_bcorp_info = {}
-                    company_bcorp_info[company] = self.get_specific_company_bcorp_information(all_target_city_company_name_link_dict[company])
+                    # TODO fix this.
+                    if company != 'Tred':
+                        company_bcorp_info[company] = self.get_specific_company_bcorp_information(all_target_city_company_name_link_dict[company])
                     
                     self.company_bcorp_data_dict.update(company_bcorp_info)
+                    
+                    self.write_dict_to_file('./data/company_information.csv', company_bcorp_info)
+                    # print(f"individual company data:\n{self.company_bcorp_data_dict}")
                 
                 
                 
                 # Get the specific data for each of those companies
                 
-                
-                
+                    
+                    
+                    
         print(f"cumulative company names with all of their links.")
         print(all_target_city_company_name_link_dict)
         
