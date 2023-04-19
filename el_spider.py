@@ -96,8 +96,8 @@ class WebCrawlingSpider:
         
         Should be called after every time the webdriver is closed."""
         
-        minimum_sleep_time = 30
-        maximum_sleep_time = 60
+        minimum_sleep_time = 6
+        maximum_sleep_time = 12
         
         for time_remaining in range(random.randint(minimum_sleep_time, maximum_sleep_time), 0, -1):
             print(f"laying low: {time_remaining:0{len(str(time_remaining))}d}", end="\r")
@@ -212,9 +212,10 @@ class WebCrawlingSpider:
         wait = WebDriverWait(driver, 10)
         
         j = driver.find_elements(By.XPATH, "//button[@class='outline-none flex items-center justify-center w-10 h-10 border border-surface-variant-light-outline rounded-lg text-fiber-neutral-500 border-fiber-neutral-500 hover:bg-white hover:border-fiber-grey-900 focus:bg-white focus:border-fiber-grey-900']")
-                                                             outline-none flex items-center justify-center w-10 h-10 border border-surface-variant-light-outline rounded-lg text-fiber-neutral-500 border-fiber-neutral-500 hover:bg-white hover:border-fiber-grey-900 focus:bg-white focus:border-fiber-grey-900
+                                                            #  outline-none flex items-center justify-center w-10 h-10 border border-surface-variant-light-outline rounded-lg text-fiber-neutral-500 border-fiber-neutral-500 hover:bg-white hover:border-fiber-grey-900 focus:bg-white focus:border-fiber-grey-900
+        print("pages")
         print(len(j))
-        input()
+        # input()
         driver.quit()
         self.spider_sleep()
         
